@@ -18,11 +18,11 @@ from django import views
 from django.contrib import admin
 from django.urls import path
 
-from mysite.views import hello, current_datetime, hours_ahead, math, valid_date
+from mysite.views import current_datetime, home, hours_ahead, math, valid_date
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path("hello/", hello),
+    path("", home, name="home"),
     path("time/", current_datetime),
     path("time/plus/<int:offset>/", hours_ahead),
     path('math/<int:number1>/<int:number2>/', math, name='math_two'),

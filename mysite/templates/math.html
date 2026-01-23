@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Math Operations{% endblock %}
+
+{% block content %}
+<section>
+    <h2>Math Operations</h2>
+
+    <p><strong>Input Numbers:</strong></p>
+    <ul>
+        {% for num in numbers %}
+            <li>{{ num }}</li>
+        {% endfor %}
+    </ul>
+
+    <table border="1" cellpadding="5">
+        <tr>
+            <th>Operation</th>
+            <th>Result</th>
+        </tr>
+        <tr>
+            <td>Sum</td>
+            <td>{{ sum }}</td>
+        </tr>
+        <tr>
+            <td>Difference</td>
+            <td>{{ difference }}</td>
+        </tr>
+        <tr>
+            <td>Product</td>
+            <td>{{ product }}</td>
+        </tr>
+        <tr>
+            <td>Quotient</td>
+            <td>{{ quotient }}</td>
+        </tr>
+    </table>
+</section>
+{% endblock %}

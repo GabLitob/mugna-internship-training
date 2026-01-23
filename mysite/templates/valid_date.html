@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}Date Validation{% endblock %}
+
+{% block content %}
+<section>
+    <h2>Date Validation Result</h2>
+
+    <p>
+        Date provided:
+        <strong>{{ year }}-{{ month }}-{{ day }}</strong>
+    </p>
+
+    {% if is_valid %}
+        <p>This is a valid date.</p>
+    {% else %}
+        <p>This is NOT a valid date.</p>
+    {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}{% endblock %}</title>
+</head>
+<body>
+    <header>
+        <h1>My Helpful Timestamp Site</h1>
+        <nav>
+            <ul>
+                <li>Time</li>
+                <li>Math</li>
+                <li>Date Validation</li>
+            </ul>
+        </nav>
+        <hr>
+    </header>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    {% block footer %}
+    <footer>
+        <hr>
+        <p>Thanks for visiting my site.</p>
+    </footer>
+    {% endblock %}
+</body>
+</html>
