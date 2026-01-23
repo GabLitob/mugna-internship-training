@@ -1,1 +1,1 @@
-# mugna-interniship-training
+# mugna-internship-training
