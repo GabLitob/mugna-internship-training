@@ -1,0 +1,29 @@
+{% extends 'books/base.html' %}
+
+{% block title %}{{ author }}{% endblock %}
+
+{% block content %}
+<h1>{{ author }}</h1>
+<p><strong>Name:</strong> {{ author.first_name }} {{ author.last_name }}</p>
+
+<h2>Books by {{ author.first_name }}</h2>
+<ul>
+    {% for book in books %}
+        <li>
+            <a href="{% url 'book_detail' book.id %}">{{ book.title }}</a>
+            {% if book.authors.count > 1 %}
+                (co-authors: 
+                {% for coauthor in book.authors.all %}
+                    {% if coauthor != author %}
+                        <a href="{% url 'author_detail' coauthor.id %}">{{ coauthor }}</a>{% if not forloop.last %}, {% endif %}
+                    {% endif %}
+                {% endfor %})
+            {% endif %}
+        </li>
+    {% empty %}
+        <li>No books found for this author.</li>
+    {% endfor %}
+</ul>
+
+<p><a href="{% url 'book_list' %}">Back to all books</a></p>
+{% endblock %}

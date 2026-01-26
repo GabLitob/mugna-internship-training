@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django import views
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 
 from mysite.views import current_datetime, home, hours_ahead, math, valid_date
 
@@ -28,4 +28,5 @@ urlpatterns = [
     path('math/<int:number1>/<int:number2>/', math, name='math_two'),
     path('math/<int:number1>/<int:number2>/<int:number3>/', math, name='math_three'),
     path('valid-date/<int:year>/<int:month>/<int:day>/', valid_date),
+    path('books/', include('books.urls')),  
 ]

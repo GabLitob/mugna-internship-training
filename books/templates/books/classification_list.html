@@ -1,0 +1,16 @@
+{% extends 'books/base.html' %}
+
+{% block title %}All Classifications{% endblock %}
+
+{% block content %}
+<h1>All Classifications</h1>
+<ul>
+    {% for classification in classifications %}
+        <li>
+            <a href="{% url 'classification_detail' classification.id %}">{{ classification.name }}</a>
+            - {{ classification.code }}
+        </li>
+    {% endfor %}
+</ul>
+<p><a href="{% url 'book_list' %}">View All Books</a></p>
+{% endblock %}

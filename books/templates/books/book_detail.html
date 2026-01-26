@@ -1,0 +1,15 @@
+{% extends 'books/base.html' %}
+
+{% block title %}{{ book.title }}{% endblock %}
+
+{% block content %}
+<h1>{{ book.title }}</h1>
+<p><strong>Author(s):</strong>
+    {% for author in book.authors.all %}
+        <a href="{% url 'author_detail' author.id %}">{{ author }}</a>{% if not forloop.last %}, {% endif %}
+    {% empty %}
+        No authors
+    {% endfor %}
+</p>
+<p><a href="{% url 'book_list' %}">Back to all books</a></p>
+{% endblock %}
