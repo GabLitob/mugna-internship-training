@@ -1,0 +1,24 @@
+{% extends "books/base.html" %}
+
+{% block title %}Publishers{% endblock %}
+
+{% block content %}
+<h1>Publishers</h1>
+
+<form method="get">
+    {{ form.as_p }}
+    <button type="submit">Search</button>
+</form>
+
+<ul>
+    {% for publisher in publishers %}
+        <li>
+            {{ publisher.name }} - {{ publisher.city }}, {{ publisher.country }}
+        </li>
+    {% empty %}
+        <li>No publishers found.</li>
+    {% endfor %}
+</ul>
+
+<p><a href="{% url 'book_list' %}">Back to all books</a></p>
+{% endblock %}

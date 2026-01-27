@@ -1,0 +1,24 @@
+{% extends "books/base.html" %}
+
+{% block title %}Authors{% endblock %}
+
+{% block content %}
+<h1>Authors</h1>
+
+<form method="get">
+    {{ form.as_p }}
+    <button type="submit">Search</button>
+</form>
+
+<ul>
+    {% for author in authors %}
+        <li>
+            <a href="{% url 'author_detail' author.id %}">{{ author.first_name }} {{ author.last_name }}</a>
+        </li>
+    {% empty %}
+        <li>No authors found.</li>
+    {% endfor %}
+</ul>
+
+<p><a href="{% url 'book_list' %}">Back to all books</a></p>
+{% endblock %}
