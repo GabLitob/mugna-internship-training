@@ -9,10 +9,13 @@ from .forms import (
     LoginForm, 
     RegisterForm
     )
-from django.contrib.auth import authenticate, login, logout # For user authentication
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User 
-from django.contrib.auth.decorators import login_required, user_passes_test # To restrict access to authenticated users only
-
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.http import Http404
+from django.views.generic import ListView, CreateView, UpdateView, DeleteView
+from django.urls import reverse_lazy
 
 
 #Users and Authentication views
@@ -70,24 +73,28 @@ def book_detail(request, book_id):
     return render(request, 'books/book_detail.html', {'book': book})
 
 # 3.List all authors with search functionality
-@login_required
-def author_list(request):
-    form = AuthorSearchForm(request.GET)
-    authors = Author.objects.all()
+class AuthorListView(LoginRequiredMixin, ListView):
+    model = Author
+    template_name = 'books/author_list.html'
+    context_object_name = 'authors'
 
-    if form.is_valid():
-        query = form.cleaned_data["query"]
-        if query:
-            words = query.split()  # split by spaces
-            for word in words:
-                authors = authors.filter(
-                    first_name__icontains=word
-                ) | authors.filter(last_name__icontains=word)
+    def get_queryset(self):
+        queryset = Author.objects.all()
+        form = AuthorSearchForm(self.request.GET)
+        if form.is_valid():
+            query = form.cleaned_data.get("query")
+            if query:
+                words = query.split()
+                for word in words:
+                    queryset = queryset.filter(
+                        first_name__icontains=word
+                    ) | queryset.filter(last_name__icontains=word)
+        return queryset.distinct()
 
-    return render(request, "books/author_list.html", {
-        "form": form,
-        "authors": authors.distinct()  # avoid duplicates
-    })
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['form'] = AuthorSearchForm(self.request.GET)
+        return context
 
 
 # 4. Show author details and their books
@@ -99,22 +106,26 @@ def author_detail(request, author_id):
 
 
 # 5. List all publishers with search functionality
-@login_required
-def publisher_list(request):
-    form = PublisherSearchForm(request.GET)
-    publishers = Publisher.objects.all()
+class PublisherListView(LoginRequiredMixin, ListView):
+    model = Publisher
+    template_name = 'books/publisher_list.html'
+    context_object_name = 'publishers'
 
-    if form.is_valid():
-        query = form.cleaned_data["query"]
-        if query:
-            words = query.split()
-            for word in words:
-                publishers = publishers.filter(name__icontains=word)
+    def get_queryset(self):
+        queryset = Publisher.objects.all()
+        form = PublisherSearchForm(self.request.GET)
+        if form.is_valid():
+            query = form.cleaned_data.get("query")
+            if query:
+                words = query.split()
+                for word in words:
+                    queryset = queryset.filter(name__icontains=word)
+        return queryset.distinct()
 
-    return render(request, "books/publisher_list.html", {
-        "form": form,
-        "publishers": publishers.distinct()
-    })
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['form'] = PublisherSearchForm(self.request.GET)
+        return context
 
 
 
@@ -135,79 +146,67 @@ def classification_detail(request, classification_id):
 
 
 #Book CRUD
-@user_passes_test(is_admin)  # Only admin users can create books
-def book_create(request):
-    if request.method == "POST":
-        form = BookForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect("book_list")
-    else:
-        form = BookForm()
+class BookCreateView(UserPassesTestMixin, CreateView):
+    model = Book
+    form_class = BookForm
+    template_name = 'books/book_form.html'
+    success_url = reverse_lazy('book_list')
 
-    return render(request, "books/book_form.html", {"form": form})
+    def test_func(self):
+        return is_admin(self.request.user)
 
-@user_passes_test(is_admin)
-def book_update(request, book_id):
-    book = get_object_or_404(Book, id=book_id)
+class BookUpdateView(UserPassesTestMixin, UpdateView):
+    model = Book
+    form_class = BookForm
+    template_name = 'books/book_form.html'
+    pk_url_kwarg = 'book_id'
 
-    if request.method == "POST":
-        form = BookForm(request.POST, instance=book)
-        if form.is_valid():
-            form.save()
-            return redirect("book_detail", book_id=book.id)
-    else:
-        form = BookForm(instance=book)
+    def test_func(self):
+        return is_admin(self.request.user)
 
-    return render(request, "books/book_form.html", {"form": form})
+    def get_success_url(self):
+        return reverse_lazy('book_detail', kwargs={'book_id': self.object.pk})
 
-@user_passes_test(is_admin)
-def book_delete(request, book_id):
-    book = get_object_or_404(Book, id=book_id)
+class BookDeleteView(UserPassesTestMixin, DeleteView):
+    model = Book
+    template_name = 'books/book_confirm_delete.html'
+    success_url = reverse_lazy('book_list')
+    pk_url_kwarg = 'book_id'
+    context_object_name = 'book'
 
-    if request.method == "POST":
-        book.delete()
-        return redirect("book_list")
-
-    return render(request, "books/book_confirm_delete.html", {"book": book})
+    def test_func(self):
+        return is_admin(self.request.user)
 
 
 #Publisher CRUD
-@user_passes_test(is_admin) # Only admin users can create publishers
-def publisher_create(request):
-    if request.method == "POST":
-        form = PublisherForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect("publisher_list")
-    else:
-        form = PublisherForm()
+class PublisherCreateView(UserPassesTestMixin, CreateView):
+    model = Publisher
+    form_class = PublisherForm
+    template_name = 'books/publisher_form.html'
+    success_url = reverse_lazy('publisher_list')
 
-    return render(request, "books/publisher_form.html", {"form": form})
+    def test_func(self):
+        return is_admin(self.request.user)
 
-@user_passes_test(is_admin)
-def publisher_update(request, publisher_id):
-    publisher = get_object_or_404(Publisher, id=publisher_id)
+class PublisherUpdateView(UserPassesTestMixin, UpdateView):
+    model = Publisher
+    form_class = PublisherForm
+    template_name = 'books/publisher_form.html'
+    success_url = reverse_lazy('publisher_list')
+    pk_url_kwarg = 'publisher_id'
 
-    if request.method == "POST":
-        form = PublisherForm(request.POST, instance=publisher)
-        if form.is_valid():
-            form.save()
-            return redirect("publisher_list")
-    else:
-        form = PublisherForm(instance=publisher)
+    def test_func(self):
+        return is_admin(self.request.user)
 
-    return render(request, "books/publisher_form.html", {"form": form})
+class PublisherDeleteView(UserPassesTestMixin, DeleteView):
+    model = Publisher
+    template_name = 'books/publisher_confirm_delete.html'
+    success_url = reverse_lazy('publisher_list')
+    pk_url_kwarg = 'publisher_id'
+    context_object_name = 'publisher'
 
-@user_passes_test(is_admin)
-def publisher_delete(request, publisher_id):
-    publisher = get_object_or_404(Publisher, id=publisher_id)
-
-    if request.method == "POST":
-        publisher.delete()
-        return redirect("publisher_list")
-
-    return render(request, "books/publisher_confirm_delete.html", {"publisher": publisher})
+    def test_func(self):
+        return is_admin(self.request.user)
 
 
 #Author CRUD
@@ -224,3 +223,16 @@ def author_create(request):
     return render(request, "books/author_form.html", {"form": form})
 
 
+#unit tests views for index and detail
+def index(request):
+    books = Book.objects.all()
+    return render(request, "books/books.html", {"books": books})
+
+
+def detail(request, pk):
+    try:
+        book = Book.objects.get(pk=pk)
+    except Book.DoesNotExist:
+        raise Http404()
+
+    return render(request, "books/book.html", {"book": book})

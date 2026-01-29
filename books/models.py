@@ -58,6 +58,26 @@ class Book(models.Model):
     author.short_description = "Author(s)"
 
     def was_published_recently(self):
+        """Returns True if the book was published within the last day, False otherwise."""
         today = timezone.now().date()
-        return self.publication_date >= today - datetime.timedelta(days=1)
+        # Check if publication date is not in the future and within the last day
+        return today - datetime.timedelta(days=1) <= self.publication_date <= today
 
+    '''
+    title = models.CharField(max_length=100)
+    authors = models.ManyToManyField(Author)
+    publisher = models.ForeignKey(Publisher)
+    publication_date = models.DateField()
+
+    def was_published_recently(self):
+        """
+        Returns True if the book was published 1 day ago. False if not.
+        """
+        date_today = timezone.now().date()
+        return date_today - datetime.timedelta(days=1) <= self.publication_date <= date_today
+
+
+    def __str__(self):
+        return self.title
+    
+    '''
