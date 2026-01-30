@@ -73,12 +73,12 @@ def book_detail(request, book_id):
     return render(request, 'books/book_detail.html', {'book': book})
 
 # 3.List all authors with search functionality
-class AuthorListView(LoginRequiredMixin, ListView):
+class AuthorListView(LoginRequiredMixin, ListView): 
     model = Author
     template_name = 'books/author_list.html'
     context_object_name = 'authors'
 
-    def get_queryset(self):
+    def get_queryset(self): #  Override get_queryset to add search functionality
         queryset = Author.objects.all()
         form = AuthorSearchForm(self.request.GET)
         if form.is_valid():
@@ -91,7 +91,7 @@ class AuthorListView(LoginRequiredMixin, ListView):
                     ) | queryset.filter(last_name__icontains=word)
         return queryset.distinct()
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, **kwargs): # Add search form to context  
         context = super().get_context_data(**kwargs)
         context['form'] = AuthorSearchForm(self.request.GET)
         return context
@@ -146,7 +146,7 @@ def classification_detail(request, classification_id):
 
 
 #Book CRUD
-class BookCreateView(UserPassesTestMixin, CreateView):
+class BookCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     model = Book
     form_class = BookForm
     template_name = 'books/book_form.html'
@@ -155,7 +155,7 @@ class BookCreateView(UserPassesTestMixin, CreateView):
     def test_func(self):
         return is_admin(self.request.user)
 
-class BookUpdateView(UserPassesTestMixin, UpdateView):
+class BookUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Book
     form_class = BookForm
     template_name = 'books/book_form.html'
@@ -167,7 +167,7 @@ class BookUpdateView(UserPassesTestMixin, UpdateView):
     def get_success_url(self):
         return reverse_lazy('book_detail', kwargs={'book_id': self.object.pk})
 
-class BookDeleteView(UserPassesTestMixin, DeleteView):
+class BookDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Book
     template_name = 'books/book_confirm_delete.html'
     success_url = reverse_lazy('book_list')
@@ -179,7 +179,7 @@ class BookDeleteView(UserPassesTestMixin, DeleteView):
 
 
 #Publisher CRUD
-class PublisherCreateView(UserPassesTestMixin, CreateView):
+class PublisherCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     model = Publisher
     form_class = PublisherForm
     template_name = 'books/publisher_form.html'
@@ -188,7 +188,7 @@ class PublisherCreateView(UserPassesTestMixin, CreateView):
     def test_func(self):
         return is_admin(self.request.user)
 
-class PublisherUpdateView(UserPassesTestMixin, UpdateView):
+class PublisherUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Publisher
     form_class = PublisherForm
     template_name = 'books/publisher_form.html'
@@ -198,7 +198,7 @@ class PublisherUpdateView(UserPassesTestMixin, UpdateView):
     def test_func(self):
         return is_admin(self.request.user)
 
-class PublisherDeleteView(UserPassesTestMixin, DeleteView):
+class PublisherDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Publisher
     template_name = 'books/publisher_confirm_delete.html'
     success_url = reverse_lazy('publisher_list')
